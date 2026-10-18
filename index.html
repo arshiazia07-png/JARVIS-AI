@@ -284,7 +284,22 @@
       if (!text.trim()) return;
 
       addMessage("you", text);
-      const reply = getDemoReply(text);
+     let reply;
+
+try {
+  const response = await fetch("/chat", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ message: text })
+  });
+
+  const data = await response.json();
+  reply = data.reply || "Sorry, I couldn't get a response.";
+} catch (error) {
+  reply = "I couldn't connect to my AI brain. Please try again.";
+}
 
       addMessage("jarvis", reply);
       speak(reply);
