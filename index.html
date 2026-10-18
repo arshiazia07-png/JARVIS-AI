@@ -1,55 +1,356 @@
 
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>JARVIS | AI Assistant</title>
+  <title>JARVIS AI Assistant</title>
+
   <style>
+    * { box-sizing: border-box; }
+
     body {
       margin: 0;
+      min-height: 100vh;
       font-family: Arial, sans-serif;
-      background: #080d18;
-      color: white;
-      text-align: center;
-      padding: 80px 20px;
+      color: #eafaff;
+      background: radial-gradient(circle at top, #102b46, #030812 65%);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
     }
-    .card {
+
+    .app {
+      width: 100%;
       max-width: 650px;
-      margin: auto;
-      padding: 45px 25px;
-      border: 1px solid #00d9ff;
-      border-radius: 20px;
-      box-shadow: 0 0 25px #00d9ff33;
+      text-align: center;
+      padding: 30px 22px;
+      border: 1px solid #174b68;
+      border-radius: 24px;
+      background: rgba(5, 17, 31, 0.92);
+      box-shadow: 0 0 45px #00cfff16;
     }
+
+    .status {
+      color: #62eaff;
+      font-size: 12px;
+      letter-spacing: 4px;
+    }
+
     h1 {
-      color: #00d9ff;
-      font-size: 48px;
-      letter-spacing: 5px;
+      font-size: clamp(42px, 10vw, 68px);
+      margin: 18px 0 5px;
+      letter-spacing: 8px;
+      color: #8beeff;
+      text-shadow: 0 0 25px #00cfff77;
     }
-    p {
-      color: #bdc9da;
-      line-height: 1.8;
+
+    .subtitle { color: #8daec2; }
+
+    .orb {
+      width: 135px;
+      height: 135px;
+      margin: 28px auto;
+      border-radius: 50%;
+      border: 2px solid #49dfff;
+      background: radial-gradient(circle, #1d8bb8, #061729 70%);
+      box-shadow: 0 0 25px #00cfff55, inset 0 0 25px #00cfff44;
+      display: grid;
+      place-items: center;
+      font-size: 45px;
+      transition: 0.3s;
     }
-    .tag {
-      color: #00d9ff;
-      font-size: 13px;
-      letter-spacing: 3px;
+
+    .orb.active {
+      animation: pulse 1.2s infinite alternate;
+    }
+
+    @keyframes pulse {
+      from { box-shadow: 0 0 20px #00cfff55; }
+      to { box-shadow: 0 0 55px #00cfffcc; }
+    }
+
+    button, select {
+      color: #eafaff;
+      background: #0b263b;
+      border: 1px solid #287d9e;
+      border-radius: 12px;
+      padding: 13px 18px;
+      font-size: 15px;
+    }
+
+    button { cursor: pointer; }
+
+    button:hover { background: #12405c; }
+
+    #mic {
+      width: 100%;
+      background: #087caa;
+      border-color: #5ce5ff;
+      font-weight: bold;
+      margin-bottom: 12px;
+    }
+
+    .controls {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin: 12px 0 22px;
+    }
+
+    #statusText {
+      color: #65dff6;
+      min-height: 22px;
+    }
+
+    .conversation {
+      text-align: left;
+      border: 1px solid #17364a;
+      border-radius: 14px;
+      padding: 15px;
+      min-height: 130px;
+      max-height: 250px;
+      overflow-y: auto;
+      background: #030b14;
+    }
+
+    .message {
+      margin: 10px 0;
+      line-height: 1.5;
+      overflow-wrap: anywhere;
+    }
+
+    .you { color: #a2c5ff; }
+    .jarvis { color: #80f0dc; }
+
+    .manual {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .manual input {
+      min-width: 0;
+      flex: 1;
+      padding: 13px;
+      border-radius: 10px;
+      color: white;
+      background: #081522;
+      border: 1px solid #21475c;
+    }
+
+    .note {
+      color: #7797a9;
+      font-size: 12px;
+      line-height: 1.6;
+      margin-top: 20px;
     }
   </style>
 </head>
+
 <body>
-  <div class="card">
-    <div class="tag">PERSONAL AI PROJECT</div>
-    <h1>J.A.R.V.I.S.</h1>
-    <h2>Your Personal AI Assistant</h2>
-    <p>
-      A Python-powered voice assistant designed to
-      explore voice recognition, speech interaction,
-      and everyday task automation.
+  <main class="app">
+    <div class="status">PERSONAL AI INTERFACE</div>
+    <h1>JARVIS</h1>
+    <p class="subtitle">Your voice-powered assistant</p>
+
+    <div class="orb" id="orb">✦</div>
+
+    <p id="statusText">SYSTEM ONLINE · READY</p>
+
+    <button id="mic">🎙️ TALK TO JARVIS</button>
+
+    <div class="controls">
+      <label>
+        <span>Voice </span>
+        <select id="voiceSelect" aria-label="Choose assistant voice">
+          <option value="female">Female voice</option>
+          <option value="male">Male voice</option>
+        </select>
+      </label>
+      <button id="stopBtn">🔇 Stop speaking</button>
+    </div>
+
+    <section class="conversation" id="conversation" aria-live="polite">
+      <div class="message jarvis">
+        <strong>JARVIS:</strong> Hello! I'm ready. Tap the microphone
+        and ask me a question.
+      </div>
+    </section>
+
+    <form class="manual" id="chatForm">
+      <input id="question" placeholder="Type a message..." autocomplete="off">
+      <button type="submit">Send</button>
+    </form>
+
+    <p class="note">
+      Voice recognition depends on your browser and internet connection.
+      Voice options depend on the voices installed on your device.
     </p>
-    <p>Built with Python · Voice Technology</p>
-  </div>
+  </main>
+
+  <script>
+    const mic = document.getElementById("mic");
+    const statusText = document.getElementById("statusText");
+    const orb = document.getElementById("orb");
+    const conversation = document.getElementById("conversation");
+    const voiceSelect = document.getElementById("voiceSelect");
+
+    const SpeechRecognition =
+      window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    let recognition = null;
+    let listening = false;
+
+    function addMessage(sender, text) {
+      const message = document.createElement("div");
+      message.className = "message " + sender;
+
+      const label = document.createElement("strong");
+      label.textContent = sender === "you" ? "YOU: " : "JARVIS: ";
+
+      message.appendChild(label);
+      message.appendChild(document.createTextNode(text));
+      conversation.appendChild(message);
+      conversation.scrollTop = conversation.scrollHeight;
+    }
+
+    function speak(text) {
+      if (!("speechSynthesis" in window)) {
+        statusText.textContent = "Speech output isn't supported here.";
+        return;
+      }
+
+      speechSynthesis.cancel();
+
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.rate = 1;
+      utterance.pitch = 1;
+
+      const voices = speechSynthesis.getVoices();
+      const preference = voiceSelect.value;
+
+      const chosenVoice = voices.find(v =>
+        preference === "female"
+          ? /female|zira|samantha|aria|jenny|susan/i.test(v.name)
+          : /male|david|mark|guy|daniel/i.test(v.name)
+      );
+
+      if (chosenVoice) utterance.voice = chosenVoice;
+
+      utterance.onstart = () => {
+        statusText.textContent = "JARVIS IS SPEAKING...";
+        orb.classList.add("active");
+      };
+
+      utterance.onend = () => {
+        statusText.textContent = "SYSTEM ONLINE · READY";
+        orb.classList.remove("active");
+      };
+
+      speechSynthesis.speak(utterance);
+    }
+
+    // Temporary demo replies. The real AI will be connected later.
+    function getDemoReply(text) {
+      const q = text.toLowerCase();
+
+      if (q.includes("your name")) {
+        return "I am JARVIS, your personal AI assistant.";
+      }
+
+      if (q.includes("hello") || q.includes("hi")) {
+        return "Hello! I'm online and ready to help.";
+      }
+
+      if (q.includes("time")) {
+        return "The time is " +
+          new Date().toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit"
+          });
+      }
+
+      if (q.includes("who made you") || q.includes("who created you")) {
+        return "I am a personal assistant project created by my developer.";
+      }
+
+      return "I'm currently in demo mode. My AI brain has not been connected yet.";
+    }
+
+    async function handleQuestion(text) {
+      if (!text.trim()) return;
+
+      addMessage("you", text);
+      const reply = getDemoReply(text);
+
+      addMessage("jarvis", reply);
+      speak(reply);
+    }
+
+    if (SpeechRecognition) {
+      recognition = new SpeechRecognition();
+      recognition.lang = "en-US";
+      recognition.continuous = false;
+      recognition.interimResults = false;
+
+      recognition.onstart = () => {
+        listening = true;
+        statusText.textContent = "LISTENING...";
+        mic.textContent = "🎙️ LISTENING...";
+        orb.classList.add("active");
+      };
+
+      recognition.onresult = event => {
+        const text = event.results[0][0].transcript;
+        handleQuestion(text);
+      };
+
+      recognition.onerror = event => {
+        statusText.textContent =
+          event.error === "not-allowed"
+            ? "Please allow microphone access."
+            : "Couldn't hear you. Please try again.";
+      };
+
+      recognition.onend = () => {
+        listening = false;
+        mic.textContent = "🎙️ TALK TO JARVIS";
+        orb.classList.remove("active");
+      };
+
+      mic.addEventListener("click", () => {
+        if (listening) {
+          recognition.stop();
+        } else {
+          try {
+            recognition.start();
+          } catch (error) {
+            statusText.textContent = "Please wait and try again.";
+          }
+        }
+      });
+    } else {
+      mic.disabled = true;
+      statusText.textContent =
+        "Voice recognition unavailable. Try Chrome or Edge.";
+    }
+
+    document.getElementById("chatForm").addEventListener("submit", event => {
+      event.preventDefault();
+      const input = document.getElementById("question");
+      handleQuestion(input.value);
+      input.value = "";
+    });
+
+    document.getElementById("stopBtn").addEventListener("click", () => {
+      if (recognition && listening) recognition.stop();
+      if ("speechSynthesis" in window) speechSynthesis.cancel();
+      orb.classList.remove("active");
+      statusText.textContent = "SYSTEM ONLINE · READY";
+    });
+  </script>
 </body>
 </html>
